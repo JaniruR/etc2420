@@ -1,12 +1,12 @@
 ---
 title: "ETC2420 Group 53"
-authors: "Sineth Wickramsinghe, Janiru Rathnapriya, Senuth Dias, Lawrence 
+authors: "Sineth Wickramsinghe, Janiru Rathnapriya, Senuth Dias, Lawrence"
 output: html_document
 date: "2024-09-22"
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE, eval = TRUE, warning = FALSE, message = FALSE, error = FALSE)
 library(tidyverse)
 library(broom)
 library(gridExtra)
@@ -21,23 +21,28 @@ dataplot <- function(x, bins = 50, colour = "blue") {
 }
 ```
 
-```{r Reading Bank Survey Data, echo=TRUE, eval=TRUE}
+```{r Reading Bank Survey Data}
 bank <- read_csv("banksurvey.csv")
 ```
 
-## Task #1 
+# **Task #1**
 
-# Descriptive Statistics on Customer Income
+### Descriptive Statistics on Customer Income
 
 ```{r Descriptive Statistics}
-summary(bank) 
-sd(bank$income)
-mean(bank$income)
+
+summary(bank$income) #Provides descriptive stats of customer income 
+sd(bank$income) #Standard deviation of customer income 
+```
+### Visualising the Customer Income ($) Data 
+
+```{r Visualising Data}
+dataplot(bank$income) 
 ```
 
-```{r}
-dataplot(bank$income)
 
+### Fitting Customer Income to Various Models
+```{r Fitting Customer Income to Varuous Models}
 normal_fit <- fitdistr(bank$income, "normal")
 normal_fit %>% tidy()
 
@@ -48,9 +53,13 @@ exponential_fit <- fitdistr(bank$income, "exponential")
 exponential_fit %>% tidy()
 ```
 
+
+
 ```{r}
 qqnorm(bank$income)
 qqline(bank$income, col = "red")
+
+qqexp(bank$income) 
 ```
 
 
@@ -84,8 +93,13 @@ p_qq_norm
 
 
 
-##Task 2 
+## **Task 2**
 
 *Central Limit Theorem Based Confidence Interval* 
 
-##Hello 
+## **Task 3**
+
+## **Task 4**
+
+
+## **Task 5**
