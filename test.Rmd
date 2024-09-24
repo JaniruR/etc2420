@@ -10,25 +10,14 @@ library(tidyverse)
 library(broom)
 library(gridExtra)
 library(MASS)
-library(rsconnect)
-```
-
-```{r}
-rsconnect::setAccountInfo(name='sineth',
-			  token='563FB8086A8DAE33D41DF6F78066368F',
-			  secret='lJ63QoFYZlVFijZyZ5h/IymqlO2ZVCWr6Bp5iMoP')
-```
-
-```{r}
-rsconnect::deployApp('path/to/your/app')
 ```
 
 
-```{r}
+```{r Reading Bank Survey Data, echo=TRUE, eval=TRUE}
 bank <- read_csv("banksurvey.csv")
 ```
 
-```{r}
+```{r Descriptive Statistics}
 summary(bank) 
 sd(bank$income)
 mean(bank$income)
