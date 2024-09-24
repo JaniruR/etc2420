@@ -1,5 +1,6 @@
 ---
-title: "Untitled"
+title: "ETC2420 Group 53"
+authors: "Sineth Wickramsinghe, Janiru Rathnapriya, Senuth Dias, Lawrence 
 output: html_document
 date: "2024-09-22"
 ---
@@ -24,6 +25,10 @@ dataplot <- function(x, bins = 50, colour = "blue") {
 bank <- read_csv("banksurvey.csv")
 ```
 
+## Task #1 
+
+# Descriptive Statistics on Customer Income
+
 ```{r Descriptive Statistics}
 summary(bank) 
 sd(bank$income)
@@ -31,7 +36,6 @@ mean(bank$income)
 ```
 
 ```{r}
-source("dataplot.R") 
 dataplot(bank$income)
 
 normal_fit <- fitdistr(bank$income, "normal")
