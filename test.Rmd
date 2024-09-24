@@ -10,8 +10,15 @@ library(tidyverse)
 library(broom)
 library(gridExtra)
 library(MASS)
-```
 
+# Creates a histogram and smoothed histogram given a vector of values.
+dataplot <- function(x, bins = 50, colour = "blue") {
+  ggplot(tibble(x = x), aes(x = x, y = after_stat(density))) +
+    geom_histogram(bins = bins, colour = colour, fill = colour, alpha = 0.2) +
+    geom_density(colour = colour, fill = colour, alpha = 0.2) +
+    theme_bw()
+}
+```
 
 ```{r Reading Bank Survey Data, echo=TRUE, eval=TRUE}
 bank <- read_csv("banksurvey.csv")
