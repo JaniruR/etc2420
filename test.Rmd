@@ -1,18 +1,41 @@
 ---
-title: "R Notebook"
-output: html_notebook
+title: "Untitled"
+output: html_document
+date: "2024-09-22"
 ---
 
-This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
-
-Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Ctrl+Shift+Enter*. 
-
-```{r}
-plot(cars)
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+dataplot <- function(x, bins = 50, colour = "blue") {
+  ggplot(tibble(x = x), aes(x = x, y = after_stat(density))) +
+    geom_histogram(bins = bins, colour = colour, fill = colour, alpha = 0.2) +
+    geom_density(colour = colour, fill = colour, alpha = 0.2) +
+    theme_bw()
+}
 ```
 
-Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Ctrl+Alt+I*.
+```{r task 1}
+set.seed(24205242)
+library(tidyverse)
+library(broom)
+library(gridExtra)
+library(MASS)
+bank_data <- read_csv("data/banksurvey.csv")
 
-When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Ctrl+Shift+K* to preview the HTML file).
+summary(bank_data$income)
+sd(bank_data$income)
 
-The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
+dataplot(bank_data$income)
+
+norm_fit <- fitdistr(bank_data$income, "normal")
+norm_fit %>% tidy()
+curve(dnorm(x,norm_fit$estimate[1], norm_fit$estimate[2]), from=25, to = 125)
+
+exp_fit <- fitdistr(bank_data$income, "exponential")
+exp_fit %>% tidy()
+
+gamma_fit <- fitdistr(bank_data$income, "gamma")
+gamma_fit %>% tidy()
+
+```
+
