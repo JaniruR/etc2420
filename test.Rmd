@@ -62,40 +62,29 @@ exponential_fit %>% tidy()
 ?qqplot
 ```
 
+### Normal Distribution QQ Plot Customer Income ($) 
 
 ```{r}
 qqnorm(bank$income)
-qqline(bank$income, col = "red")
+qqline(bank$income, col = "turquoise")
 ```
+
+### Exponential Distribution QQ Plot Customer Income ($) 
 
 
 ```{r}
-params_norm <- fitdistr(bank$income, "normal")$estimate
-p_qq_norm <- ggplot(tibble(x = bank$income)) + 
-  aes(sample = x) + 
-  stat_qq(distribution = qnorm, dparams = params_norm) + 
-  stat_qq_line(distribution = qnorm, dparams = params_norm, color = "black") + 
-  theme(aspect.ratio = 1) + 
-  theme_bw() + 
-  xlab("Theoretical Quantities (normal distribution)") + 
-  ylab("Sample (CBT score difference)")
-p_qq_norm 
+qqplot(qexp(ppoints(length(bank$income)), rate = exponential_fit$estimate), bank$income)
+abline(0, 1, col = "turquoise")
 ```
+
+
+
+### Gamma Distribution QQ Plot Customer Income ($) 
 
 
 ```{r}
-params_exp <- fitdistr(bank$income, "exponential")$estimate
-p_qq_norm <- ggplot(tibble(x = bank$income)) + 
-  aes(sample = x) + 
-  stat_qq(distribution = qexp, dparams = params_exp) + 
-  stat_qq_line(distribution = qexp, dparams = params_exp, color = "black") + 
-  theme(aspect.ratio = 1) + 
-  theme_bw() + 
-  xlab("Theoretical Quantities (exponential distribution)") + 
-  ylab("Sample (CBT score difference)")
-p_qq_norm 
-```
 
+```
 
 
 
