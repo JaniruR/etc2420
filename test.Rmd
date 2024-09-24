@@ -6,40 +6,86 @@ date: "2024-09-22"
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-dataplot <- function(x, bins = 50, colour = "blue") {
-  ggplot(tibble(x = x), aes(x = x, y = after_stat(density))) +
-    geom_histogram(bins = bins, colour = colour, fill = colour, alpha = 0.2) +
-    geom_density(colour = colour, fill = colour, alpha = 0.2) +
-    theme_bw()
-}
-```
-
-```{r task 1}
-set.seed(24205242)
 library(tidyverse)
 library(broom)
 library(gridExtra)
 library(MASS)
-bank_data <- read_csv("data/banksurvey.csv")
+library(rsconnect)
+```
 
-summary(bank_data$income)
-sd(bank_data$income)
+```{r}
+rsconnect::setAccountInfo(name='sineth',
+			  token='563FB8086A8DAE33D41DF6F78066368F',
+			  secret='lJ63QoFYZlVFijZyZ5h/IymqlO2ZVCWr6Bp5iMoP')
+```
 
-dataplot(bank_data$income)
+```{r}
+rsconnect::deployApp('path/to/your/app')
+```
 
-norm_fit <- fitdistr(bank_data$income, "normal")
-norm_fit %>% tidy()
-curve(dnorm(x,norm_fit$estimate[1], norm_fit$estimate[2]), from=25, to = 125)
 
-exp_fit <- fitdistr(bank_data$income, "exponential")
-exp_fit %>% tidy()
+```{r}
+bank <- read_csv("banksurvey.csv")
+```
 
-gamma_fit <- fitdistr(bank_data$income, "gamma")
+```{r}
+summary(bank) 
+sd(bank$income)
+mean(bank$income)
+```
+
+```{r}
+source("dataplot.R") 
+dataplot(bank$income)
+
+normal_fit <- fitdistr(bank$income, "normal")
+normal_fit %>% tidy()
+
+gamma_fit <- fitdistr(bank$income, "gamma") 
 gamma_fit %>% tidy()
 
+exponential_fit <- fitdistr(bank$income, "exponential") 
+exponential_fit %>% tidy()
+```
+
+```{r}
+qqnorm(bank$income)
+qqline(bank$income, col = "red")
+```
+
+
+```{r}
+params_norm <- fitdistr(bank$income, "normal")$estimate
+p_qq_norm <- ggplot(tibble(x = bank$income)) + 
+  aes(sample = x) + 
+  stat_qq(distribution = qnorm, dparams = params_norm) + 
+  stat_qq_line(distribution = qnorm, dparams = params_norm, color = "black") + 
+  theme(aspect.ratio = 1) + 
+  theme_bw() + 
+  xlab("Theoretical Quantities (normal distribution)") + 
+  ylab("Sample (CBT score difference)")
+p_qq_norm 
+```
+
+
+```{r}
+params_exp <- fitdistr(bank$income, "exponential")$estimate
+p_qq_norm <- ggplot(tibble(x = bank$income)) + 
+  aes(sample = x) + 
+  stat_qq(distribution = qexp, dparams = params_exp) + 
+  stat_qq_line(distribution = qexp, dparams = params_exp, color = "black") + 
+  theme(aspect.ratio = 1) + 
+  theme_bw() + 
+  xlab("Theoretical Quantities (exponential distribution)") + 
+  ylab("Sample (CBT score difference)")
+p_qq_norm 
 ```
 
 
 
+
+##Task 2 
+
+*Central Limit Theorem Based Confidence Interval* 
 
 ##Hello 
