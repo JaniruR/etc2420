@@ -37,11 +37,16 @@ sd(bank$income) #Standard deviation of customer income
 ### Visualising the Customer Income ($) Data 
 
 ```{r Visualising Data}
-dataplot(bank$income) 
+dataplot(bank$income) + 
+  xlab("Customer Income ($)") + 
+  ylab("Frequency") + 
+  ggtitle("Distribution of Customer Income ($)") + 
+  theme(plot.title = element_text(hjust = 0.5))
 ```
 
 
 ### Fitting Customer Income to Various Models
+
 ```{r Fitting Customer Income to Varuous Models}
 normal_fit <- fitdistr(bank$income, "normal")
 normal_fit %>% tidy()
@@ -53,13 +58,14 @@ exponential_fit <- fitdistr(bank$income, "exponential")
 exponential_fit %>% tidy()
 ```
 
+```{r}
+?qqplot
+```
 
 
 ```{r}
 qqnorm(bank$income)
 qqline(bank$income, col = "red")
-
-qqexp(bank$income) 
 ```
 
 
