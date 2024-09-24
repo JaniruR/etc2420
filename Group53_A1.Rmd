@@ -57,11 +57,6 @@ gamma_fit %>% tidy()
 exponential_fit <- fitdistr(bank$income, "exponential") 
 exponential_fit %>% tidy()
 ```
-
-```{r}
-?qqplot
-```
-
 ### Normal Distribution QQ Plot Customer Income ($) 
 
 ```{r}
