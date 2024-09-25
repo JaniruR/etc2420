@@ -23,6 +23,7 @@ dataplot <- function(x, bins = 50, colour = "blue") {
 
 ```{r Reading Bank Survey Data}
 bank <- read_csv("banksurvey.csv")
+head(bank)
 ```
 
 # **Task #1**
