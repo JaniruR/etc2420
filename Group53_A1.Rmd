@@ -57,19 +57,26 @@ gamma_fit %>% tidy()
 exponential_fit <- fitdistr(bank$income, "exponential") 
 exponential_fit %>% tidy()
 ```
+
 ### Normal Distribution QQ Plot Customer Income ($) 
 
 ```{r}
-qqnorm(bank$income)
-qqline(bank$income, col = "turquoise")
+qqnorm(bank$income, 
+       main = "Normal QQ Plot Cusomter Income ($)",
+       xlab = "Theoretical Quantiles (Normal Distribution)", 
+       ylab = "Sample (Customer Income)")
+qqline(bank$income, col = "red") 
 ```
 
 ### Exponential Distribution QQ Plot Customer Income ($) 
 
 
 ```{r}
-qqplot(qexp(ppoints(length(bank$income)), rate = exponential_fit$estimate), bank$income)
-abline(0, 1, col = "turquoise")
+qqplot(qexp(ppoints(length(bank$income)), rate = exponential_fit$estimate), bank$income, 
+       main = "Exponential QQ Plot Cusomter Income ($)",
+       xlab = "Theoretical Quantiles (Exponential Distribution)", 
+       ylab = "Sample (Customer Income)")
+abline(0, 1, col = "red")
 ```
 
 
@@ -78,7 +85,7 @@ abline(0, 1, col = "turquoise")
 
 
 ```{r}
-
+qqplot(qgamma())
 ```
 
 
