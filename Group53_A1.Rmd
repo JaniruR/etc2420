@@ -19,6 +19,8 @@ dataplot <- function(x, bins = 50, colour = "blue") {
     geom_density(colour = colour, fill = colour, alpha = 0.2) +
     theme_bw()
 }
+
+set.seed(24205242)
 ```
 
 ```{r Reading Bank Survey Data}
@@ -52,11 +54,11 @@ dataplot(bank$income) +
 normal_fit <- fitdistr(bank$income, "normal")
 normal_fit %>% tidy()
 
-gamma_fit <- fitdistr(bank$income, "gamma") 
-gamma_fit %>% tidy()
-
 exponential_fit <- fitdistr(bank$income, "exponential") 
 exponential_fit %>% tidy()
+
+gamma_fit <- fitdistr(bank$income, "gamma") 
+gamma_fit %>% tidy()
 ```
 
 ### Normal Distribution QQ Plot Customer Income ($) 
@@ -101,68 +103,74 @@ abline(0, 1, col = "red")
 ### Estimating 80th Percentile of Customer Income ($) using quantile() R function 
 
 ```{r}
-normal_quantile <- qnorm(0.8, mean = normal_fit$estimate[1], sd =normal_fit$estimate[2])
-exponential_quantile <- qexp(0.8, rate = exponential_fit$estimate)
-gamma_quantile <- qgamma(0.8, shape = gamma_fit$estimate[1], rate = gamma_fit$estimate[2])
-sample_quantile <- quantile(bank$income, probs = 0.8, type = 7)
+normal_80th_percentile <- qnorm(0.8, mean = normal_fit$estimate[1], sd =normal_fit$estimate[2])
+exponential_80th_percentile <- qexp(0.8, rate = exponential_fit$estimate)
+gamma_80th_percentile <- qgamma(0.8, shape = gamma_fit$estimate[1], rate = gamma_fit$estimate[2])
+sample_80th_percentile <- quantile(bank$income, probs = 0.8, type = 7)
 
-tibble(normal_quantile, exponential_quantile, gamma_quantile, sample_quantile)
+tibble(normal_80th_percentile, exponential_80th_percentile, gamma_80th_percentile, sample_80th_percentile)
 ```
 
 ```{r}
 B <- 5000
-quant <- matrix(nrow = B, ncol = 2)
+norm_quant <- matrix(nrow = B, ncol = 1)
+
+for (b in 1:B) {
+  temp <- sample(bank$income, replace = TRUE)
+  fit <- fitdistr(temp, "normal")
+  
+  norm_quant[b,] <- qnorm(0.8, fit$estimate[1], fit$estimate[2])
+}
+
+normal_80th_percentiles <- quantile(norm_quant, c(0.025, 0.975))
+```
+
+```{r}
+B <- 5000
+exp_quant <- matrix(nrow = B, ncol = 1)
+
+for (b in 1:B) {
+  temp <- sample(bank$income, replace = TRUE)
+  fit <- fitdistr(temp, "exponential")
+  
+  exp_quant[b,] <- qexp(0.8, fit$estimate)
+}
+
+exponential_80th_percentiles <- quantile(exp_quant, c(0.025, 0.975))
+exponential_80th_percentiles
+```
+
+```{r}
+B <- 5000
+gamma_quant <- matrix(nrow = B, ncol = 1)
+
+for (b in 1:B) {
+  temp <- sample(bank$income, replace = TRUE)
+  fit <- fitdistr(temp, "gamma")
+  
+  gamma_quant[b,] <- qgamma(0.8, fit$estimate[1], fit$estimate[2])
+}
+
+gamma_80th_percentiles <- quantile(gamma_quant, c(0.025, 0.975))
+gamma_80th_percentiles
+```
+
+
+```{r}
+B <- 5000
+quant <- matrix(nrow = B, ncol = 1)
 
 for (b in 1:B) {
   temp <- sample(bank$income, replace = TRUE)
   quant[b,] <- quantile(temp, probs = 0.8, type = 7)
 }
 
-quantile(quant[, 1], c(0.025, 0.975))
+sample_80th_percentiles <- quantile(quant, c(0.025, 0.975))
 ```
-
-### *Central Limit Theorem Based Confidence Interval* 
 
 ```{r}
-norm_quant <- qnorm(0.8, mean = normal_fit$estimate[1], sd =normal_fit$estimate[2])
-qexp(0.8, rate = exponential_fit$estimate)
-qgamma(0.8, shape = gamma_fit$estimate[1], rate = gamma_fit$estimate[2])
+tibble(normal_80th_percentiles, exponential_80th_percentiles, gamma_80th_percentiles, sample_80th_percentiles)
 ```
-```{r}
-normal_mle <- normal_fit$estimate #point estimates 
-normal_se <- normal_fit$sd 
-normal_ci_lower <- norm_quant + qnorm(0.025) * normal_se
-normal_ci_upper <- norm_quant + qnorm(0.975) * normal_se 
-
-tibble(parameter = c("mew", "shigma"),
-       mle = norm_quant,
-       se  = normal_se,
-       ci_lower = normal_ci_lower,
-       ci_upper = normal_ci_upper)
-```
-
-### *95% Confidence Interval: CLT Method --> Normal Distribution* 
-
-```{r}
-# Initialise values for doing the bootstrap.
-B <- 5000
-normal_boot <- matrix(nrow = B, ncol = 2)
-
-# Generate the bootstrap samples and calculate statistics.
-for(b in 1:B) {
-  temp <- sample(bank$income, replace = TRUE)
-  normal_boot[b,] <- fitdistr(temp, "normal")$estimate 
-}
-
-# Calculate CIs.
-normal_boot_ci_mu    <- quantile(normal_boot[, 1], c(0.025, 0.975))
-normal_boot_ci_sigma <- quantile(normal_boot[, 2], c(0.025, 0.975))
-
-# Look at the values.
-normal_boot_ci_mu
-normal_boot_ci_sigma
-```
-
 
 ## **Task 3**
 
