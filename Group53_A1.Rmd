@@ -101,10 +101,26 @@ abline(0, 1, col = "red")
 ### Estimating 80th Percentile of Customer Income ($) using quantile() R function 
 
 ```{r}
+normal_quantile <- qnorm(0.8, mean = normal_fit$estimate[1], sd =normal_fit$estimate[2])
+exponential_quantile <- qexp(0.8, rate = exponential_fit$estimate)
+gamma_quantile <- qgamma(0.8, shape = gamma_fit$estimate[1], rate = gamma_fit$estimate[2])
 sample_quantile <- quantile(bank$income, probs = 0.8, type = 7)
 
-print(sample_quantile) 
+tibble(normal_quantile, exponential_quantile, gamma_quantile, sample_quantile)
 ```
+
+```{r}
+B <- 5000
+quant <- matrix(nrow = B, ncol = 2)
+
+for (b in 1:B) {
+  temp <- sample(bank$income, replace = TRUE)
+  quant[b,] <- quantile(temp, probs = 0.8, type = 7)
+}
+
+quantile(quant[, 1], c(0.025, 0.975))
+```
+
 ### *Central Limit Theorem Based Confidence Interval* 
 
 ```{r}
