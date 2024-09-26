@@ -86,14 +86,67 @@ abline(0, 1, col = "red")
 
 
 ```{r}
-qqplot(qgamma())
+qqplot(qgamma(ppoints(length(bank$income)), shape = gamma_fit$estimate["shape"], rate = gamma_fit$estimate["rate"]), bank$income, 
+       main = "Gamma QQ Plot Cusomter Income ($)",
+       xlab = "Theoretical Quantiles (Gamma Distribution)", 
+       ylab = "Sample (Customer Income)") 
+
+abline(0, 1, col = "red")
 ```
 
 
 
 ## **Task 2**
 
-*Central Limit Theorem Based Confidence Interval* 
+### Estimating 80th Percentile of Customer Income ($) using quantile() R function 
+
+```{r}
+sample_quantile <- quantile(bank$income, probs = 0.8, type = 7)
+
+print(sample_quantile) 
+```
+### *Central Limit Theorem Based Confidence Interval* 
+
+```{r}
+norm_quant <- qnorm(0.8, mean = normal_fit$estimate[1], sd =normal_fit$estimate[2])
+qexp(0.8, rate = exponential_fit$estimate)
+qgamma(0.8, shape = gamma_fit$estimate[1], rate = gamma_fit$estimate[2])
+```
+```{r}
+normal_mle <- normal_fit$estimate #point estimates 
+normal_se <- normal_fit$sd 
+normal_ci_lower <- norm_quant + qnorm(0.025) * normal_se
+normal_ci_upper <- norm_quant + qnorm(0.975) * normal_se 
+
+tibble(parameter = c("mew", "shigma"),
+       mle = norm_quant,
+       se  = normal_se,
+       ci_lower = normal_ci_lower,
+       ci_upper = normal_ci_upper)
+```
+
+### *95% Confidence Interval: CLT Method --> Normal Distribution* 
+
+```{r}
+# Initialise values for doing the bootstrap.
+B <- 5000
+normal_boot <- matrix(nrow = B, ncol = 2)
+
+# Generate the bootstrap samples and calculate statistics.
+for(b in 1:B) {
+  temp <- sample(bank$income, replace = TRUE)
+  normal_boot[b,] <- fitdistr(temp, "normal")$estimate 
+}
+
+# Calculate CIs.
+normal_boot_ci_mu    <- quantile(normal_boot[, 1], c(0.025, 0.975))
+normal_boot_ci_sigma <- quantile(normal_boot[, 2], c(0.025, 0.975))
+
+# Look at the values.
+normal_boot_ci_mu
+normal_boot_ci_sigma
+```
+
 
 ## **Task 3**
 
