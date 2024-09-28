@@ -155,7 +155,6 @@ gamma_80th_percentiles <- quantile(gamma_quant, c(0.025, 0.975))
 gamma_80th_percentiles
 ```
 
-
 ```{r}
 B <- 5000
 quant <- matrix(nrow = B, ncol = 1)
