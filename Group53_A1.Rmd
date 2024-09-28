@@ -111,6 +111,9 @@ sample_80th_percentile <- quantile(bank$income, probs = 0.8, type = 7)
 tibble(normal_80th_percentile, exponential_80th_percentile, gamma_80th_percentile, sample_80th_percentile)
 ```
 
+
+
+
 ```{r}
 B <- 5000
 norm_quant <- matrix(nrow = B, ncol = 1)
@@ -123,7 +126,10 @@ for (b in 1:B) {
 }
 
 normal_80th_percentiles <- quantile(norm_quant, c(0.025, 0.975))
+
+normal_80th_percentiles
 ```
+
 
 ```{r}
 B <- 5000
@@ -174,6 +180,74 @@ tibble(normal_80th_percentiles, exponential_80th_percentiles, gamma_80th_percent
 beep
 
 ## **Task 3**
+
+```{r}
+# Set parameters
+set.seed(123)  # For reproducibility
+mean_income <- 100000
+lambda <- 1 / mean_income
+B <- 5000  # Number of bootstrap samples
+n <- 200  # Sample size for each bootstrap sample
+
+# Initialize vectors to store the 80th percentiles
+normal_80th_percentiles <- numeric(B)
+exponential_80th_percentiles <- numeric(B)
+gamma_80th_percentiles <- numeric(B)
+sample_80th_percentiles <- numeric(B)
+
+# Simulate sampling distribution
+for (b in 1:B) {
+  # Generate a sample from the exponential distribution
+  sample_data <- rexp(n, rate = lambda)
+  
+  # Fit models to the sampled data
+  normal_fit <- fitdistr(sample_data, "normal")
+  exponential_fit <- fitdistr(sample_data, "exponential")
+  gamma_fit <- fitdistr(sample_data, "gamma")
+  
+  # Calculate the 80th percentiles for each model
+  normal_80th_percentiles[b] <- qnorm(0.8, mean = normal_fit$estimate[1], sd = normal_fit$estimate[2])
+  exponential_80th_percentiles[b] <- qexp(0.8, rate = exponential_fit$estimate)
+  gamma_80th_percentiles[b] <- qgamma(0.8, shape = gamma_fit$estimate[1], rate = gamma_fit$estimate[2])
+  sample_80th_percentiles[b] <- quantile(sample_data, probs = 0.8, type = 7)
+}
+
+# Calculate the bias and standard deviation for each estimator
+bias_normal <- mean(normal_80th_percentiles) - qexp(0.8, rate = lambda)
+bias_exponential <- mean(exponential_80th_percentiles) - qexp(0.8, rate = lambda)
+bias_gamma <- mean(gamma_80th_percentiles) - qexp(0.8, rate = lambda)
+bias_sample <- mean(sample_80th_percentiles) - qexp(0.8, rate = lambda)
+
+sd_normal <- sd(normal_80th_percentiles)
+sd_exponential <- sd(exponential_80th_percentiles)
+sd_gamma <- sd(gamma_80th_percentiles)
+sd_sample <- sd(sample_80th_percentiles)
+
+# Summary of results
+results <- tibble(
+  Estimator = c("Normal", "Exponential", "Gamma", "Sample Quantile"),
+  Bias = c(bias_normal, bias_exponential, bias_gamma, bias_sample),
+  Standard_Deviation = c(sd_normal, sd_exponential, sd_gamma, sd_sample)
+)
+
+print(results)
+
+# Plotting the distributions
+library(ggplot2)
+
+# Combine the data into a single data frame for plotting
+plot_data <- tibble(
+  Percentile = c(normal_80th_percentiles, exponential_80th_percentiles, gamma_80th_percentiles, sample_80th_percentiles),
+  Estimator = factor(rep(c("Normal", "Exponential", "Gamma", "Sample Quantile"), each = B))
+)
+
+ggplot(plot_data, aes(x = Percentile, fill = Estimator)) +
+  geom_density(alpha = 0.5) +
+  labs(title = "Sampling Distributions of 80th Percentiles", x = "80th Percentile", y = "Density") +
+  theme_minimal()
+```
+
+
 
 ## **Task 4**
 
