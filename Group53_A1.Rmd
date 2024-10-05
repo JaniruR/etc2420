@@ -182,16 +182,10 @@ beep
 ## **Task 3**
 
 ```{r}
-set.seed(1000)
 n <- 200
 B <- 5000
 
 samples <- replicate(B, rexp(n, rate = 1/100))
-
-for (i in 5000) {
-  sample <- rexp(200, 1/100)
-  
-}
 
 normal_estimates <- apply(samples, 2, function(x) qnorm(0.8, mean(x), sd(x)))
 exp_estimates <- apply(samples, 2, function(x) qexp(0.8, rate = 1/mean(x)))
@@ -203,6 +197,7 @@ gamma_estimates <- apply(samples, 2, function(x) {
 true_80th_percentile <- qexp(0.8, 1/100)
 true_80th_percentile
 blob <- tibble(normal_estimates, exp_estimates, gamma_estimates) 
+blob
 ```
 
 ```{r}
@@ -229,6 +224,7 @@ bias_exp
 bias_gamma <- mean(gamma_estimates) - true_80th_percentile
 bias_gamma
 ```
+
 ```{r}
 
 ```
