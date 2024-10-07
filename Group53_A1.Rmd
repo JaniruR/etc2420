@@ -46,6 +46,7 @@ income_summary <-
     max = max(income), 
     min = min(income)
   )
+income_summary
 ```
 ### Visualising the Customer Income ($) Data 
 
@@ -174,7 +175,7 @@ for (b in 1:B) {
 }
 
 exponential_80th_percentiles <- quantile(exp_quant, c(0.025, 0.975))
-exponential_80th_percentiles
+exponential_80th_percentiles 
 ```
 
 ```{r}
@@ -205,15 +206,18 @@ sample_80th_percentiles <- quantile(quant, c(0.025, 0.975))
 ```
 
 ```{r}
-tibble(normal_80th_percentiles, exponential_80th_percentiles, gamma_80th_percentiles, sample_80th_percentiles)
+data.frame(Normal_80th_percentiles = normal_80th_percentiles,
+           Exponential_80th_percentiles = exponential_80th_percentiles,
+           Gamma_80th_percentiles = gamma_80th_percentiles,
+           Sample_80th_percentiles = sample_80th_percentiles,
+           row.names = c("Lower",
+                         "Upper")
+           )
 ```
-
-beep
 
 ## **Task 3**
 
 ```{r}
-set.seed(1000)
 n <- 200
 B <- 5000
 
@@ -232,16 +236,11 @@ gamma_estimates <- apply(samples, 2, function(x) {
 })
 
 true_80th_percentile <- qexp(0.8, 1/100)
-true_80th_percentile
-blob <- tibble(normal_estimates, exp_estimates, gamma_estimates) 
+all_80th_percentile_estimates <- tibble(normal_estimates, exp_estimates, gamma_estimates) 
 ```
 
 ```{r}
-data.frame(
-  Normal = normal_estimates,
-  Exponential = exp_estimates,
-  Gamma = gamma_estimates
-) %>%
+all_80th_percentile_estimates %>%
   gather(key = "Estimator", value = "Estimate") %>%
   ggplot(aes(x = Estimate, fill = Estimator)) +
   geom_density(alpha = 0.3) +
@@ -252,13 +251,22 @@ data.frame(
 ```
 ```{r}
 bias_normal <- mean(normal_estimates) - true_80th_percentile
-bias_normal
-
 bias_exp <- mean(exp_estimates) - true_80th_percentile
-bias_exp
-
 bias_gamma <- mean(gamma_estimates) - true_80th_percentile
-bias_gamma
+
+bias = c(bias_normal, bias_exp, bias_gamma)
+
+sd_normal <- sd(normal_estimates)
+sd_exp <- sd(exp_estimates)
+sd_gamma <- sd(gamma_estimates)
+
+sd = c(sd_normal, sd_exp, sd_gamma)
+
+data.frame(Bias = bias,
+           Standard_Deviation = sd,
+           row.names = c("Normal",
+                         "Exponential",
+                         "Gamma"))
 ```
 
 
@@ -321,7 +329,6 @@ qgamma(c(0.025, 0.975), completed_uni_posterior$alpha_tilde, completed_uni_poste
 ```
 
 ```{r}
-set.seed(24205242)
 R <- 10000
 
 sampleCompleted <- rgamma(R, completed_uni_posterior$alpha_tilde, completed_uni_posterior$beta_tilde)
