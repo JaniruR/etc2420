@@ -36,11 +36,25 @@ head(bank)
 
 summary(bank$income) #Provides descriptive stats of customer income 
 sd(bank$income) #Standard deviation of customer income 
+
+income_summary <- 
+  bank %>% 
+  summarise(
+    mean = mean(income), 
+    median = median(income), 
+    sd = sd(income), 
+    max = max(income), 
+    min = min(income)
+  )
 ```
 ### Visualising the Customer Income ($) Data 
 
 ```{r Visualising Data}
 dataplot(bank$income) + 
+  geom_vline(xintercept = income_summary$mean, colour = "red", linetype = 5) +
+  geom_vline(xintercept = income_summary$median, colour = "blue", linetype = 2) +
+  annotate("text", label = "mean", x = income_summary$mean + 20, y = 0.011) +
+  annotate("text", label = "median", x = income_summary$median - 25, y = 0.011) +
   xlab("Customer Income ($)") + 
   ylab("Frequency") + 
   ggtitle("Distribution of Customer Income ($)") + 
@@ -64,22 +78,34 @@ gamma_fit %>% tidy()
 ### Normal Distribution QQ Plot Customer Income ($) 
 
 ```{r}
-qqnorm(bank$income, 
-       main = "Normal QQ Plot Cusomter Income ($)",
-       xlab = "Theoretical Quantiles (Normal Distribution)", 
-       ylab = "Sample (Customer Income)")
-qqline(bank$income, col = "red") 
+qq_norm <- 
+  bank %>% 
+  ggplot() +
+    aes(sample = income) +
+    stat_qq(distribution = qnorm, dparams = normal_fit$estimate) +
+    stat_qq_line(distribution = qnorm, dparams = normal_fit$estimate, color = "red") +
+    theme(aspect.ratio = 1) +    
+    theme_bw() +
+    xlab("Theoretical quantiles (normal distribution)") +
+    ylab("Sample (income)")
+qq_norm
 ```
 
 ### Exponential Distribution QQ Plot Customer Income ($) 
 
 
 ```{r}
-qqplot(qexp(ppoints(length(bank$income)), rate = exponential_fit$estimate), bank$income, 
-       main = "Exponential QQ Plot Cusomter Income ($)",
-       xlab = "Theoretical Quantiles (Exponential Distribution)", 
-       ylab = "Sample (Customer Income)")
-abline(0, 1, col = "red")
+qq_exp <- 
+  bank %>% 
+  ggplot() +
+    aes(sample = income) +
+    stat_qq(distribution = qexp, dparams = exponential_fit$estimate) +
+    stat_qq_line(distribution = qexp, dparams = exponential_fit$estimate, color = "red") +
+    theme(aspect.ratio = 1) +    
+    theme_bw() +
+    xlab("Theoretical quantiles (exponential distribution)") +
+    ylab("Sample (income)")
+qq_exp
 ```
 
 
@@ -88,12 +114,17 @@ abline(0, 1, col = "red")
 
 
 ```{r}
-qqplot(qgamma(ppoints(length(bank$income)), shape = gamma_fit$estimate["shape"], rate = gamma_fit$estimate["rate"]), bank$income, 
-       main = "Gamma QQ Plot Cusomter Income ($)",
-       xlab = "Theoretical Quantiles (Gamma Distribution)", 
-       ylab = "Sample (Customer Income)") 
-
-abline(0, 1, col = "red")
+qq_gamma <- 
+  bank %>% 
+  ggplot() +
+    aes(sample = income) +
+    stat_qq(distribution = qgamma, dparams = gamma_fit$estimate) +
+    stat_qq_line(distribution = qgamma, dparams = gamma_fit$estimate, color = "red") +
+    theme(aspect.ratio = 1) +    
+    theme_bw() +
+    xlab("Theoretical quantiles (gamma distribution)") +
+    ylab("Sample (income)")
+qq_gamma
 ```
 
 
@@ -182,10 +213,16 @@ beep
 ## **Task 3**
 
 ```{r}
+set.seed(1000)
 n <- 200
 B <- 5000
 
 samples <- replicate(B, rexp(n, rate = 1/100))
+
+for (i in 5000) {
+  sample <- rexp(200, 1/100)
+  
+}
 
 normal_estimates <- apply(samples, 2, function(x) qnorm(0.8, mean(x), sd(x)))
 exp_estimates <- apply(samples, 2, function(x) qexp(0.8, rate = 1/mean(x)))
@@ -197,7 +234,6 @@ gamma_estimates <- apply(samples, 2, function(x) {
 true_80th_percentile <- qexp(0.8, 1/100)
 true_80th_percentile
 blob <- tibble(normal_estimates, exp_estimates, gamma_estimates) 
-blob
 ```
 
 ```{r}
@@ -225,12 +261,75 @@ bias_gamma <- mean(gamma_estimates) - true_80th_percentile
 bias_gamma
 ```
 
-```{r}
-
-```
-
 
 ## **Task 4**
 
+```{r}
+unique(bank$education) 
+
+master <- bank %>% filter(education == "Master") 
+bachelor <- bank %>% filter(education == "Bachelor") 
+highschool <- bank %>% filter(education == "High school") 
+doctorate <- bank %>% filter(education == "Doctorate") 
+
+master_plot <- dataplot(master$income, bins = 30) + ggtitle("Masters")  + xlab("Income ($)")
+bachelor_plot <- dataplot(bachelor$income, bins = 30) + ggtitle("Bachelor") + xlab("Income ($)")
+highschool_plot <- dataplot(highschool$income, bins = 30) + ggtitle("High School") + xlab("Income ($)")
+doctorate_plot <- dataplot(doctorate$income, bins = 30) + ggtitle("Doctorate") + xlab("Income ($)")
+
+grid.arrange(master_plot, bachelor_plot, highschool_plot, doctorate_plot)
+```
+
+```{r}
+n_completed_uni <- bank %>% filter(education == "High school")
+mean(n_completed_uni$income)
+
+completed_uni <- bank %>% filter(education != "High school")
+mean(completed_uni$income) 
+
+t_test_result <- t.test(completed_uni$income, n_completed_uni$income, conf.level = 0.95)
+
+t_test_result$conf.int
+```
 
 ## **Task 5**
+```{r}
+dataplot(n_completed_uni$income)
+dataplot(completed_uni$income)
+
+gamma_exponential <- function(n, xbar, alpha = 1, beta = 1) {
+  atil <- alpha + n
+  btil <- beta + n*xbar
+  out <- list(alpha_tilde = atil, beta_tilde = btil)
+  return(out)
+}
+
+gamma_meanvar <- function(alpha, beta) {
+  mean <- alpha / beta
+  var <- alpha / (beta^2)
+  out <- list(mean = mean, var = var)
+  return(out)
+}
+
+n_completed_uni_posterior <- gamma_exponential(30, 65.06)
+completed_uni_posterior <- gamma_exponential(170, 93.48941)
+n_completed_uni_posterior #distribution of λ_0
+completed_uni_posterior #distribution of λ_1
+
+qgamma(c(0.025, 0.975), n_completed_uni_posterior$alpha_tilde, n_completed_uni_posterior$beta_tilde) #95% chance of λ_0 being within this interval
+qgamma(c(0.025, 0.975), completed_uni_posterior$alpha_tilde, completed_uni_posterior$beta_tilde) #95% chance of λ_1 being within this interval
+```
+
+```{r}
+set.seed(24205242)
+R <- 10000
+
+sampleCompleted <- rgamma(R, completed_uni_posterior$alpha_tilde, completed_uni_posterior$beta_tilde)
+sampleHighschool <- rgamma(R, n_completed_uni_posterior$alpha_tilde, n_completed_uni_posterior$beta_tilde)
+sampleDifference <- sampleCompleted - sampleHighschool
+
+blob <- qexp(0.8, sampleCompleted) - qexp(0.8, sampleHighschool)
+
+quantile(blob, probs = c(0.025,0.975), type = 7)
+```
+
