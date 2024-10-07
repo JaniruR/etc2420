@@ -1,6 +1,6 @@
 ---
 title: "ETC2420 Group 53"
-authors: "Sineth Wickramsinghe, Janiru Rathnapriya, Senuth Dias, Lawrence"
+authors: "Sineth Wickramsinghe, Janiru Rathnapriya, Senuth Dias, Lawrence Nguyen"
 output: html_document
 date: "2024-09-22"
 ---
@@ -30,25 +30,26 @@ head(bank)
 
 # **Task #1**
 
-### Descriptive Statistics on Customer Income
+### **Descriptive Statistics on Customer Income**
 
 ```{r Descriptive Statistics}
 
-summary(bank$income) #Provides descriptive stats of customer income 
-sd(bank$income) #Standard deviation of customer income 
-
-income_summary <- 
+income_summary <- #Provides descriptive stats of customer income 
   bank %>% 
   summarise(
     mean = mean(income), 
     median = median(income), 
-    sd = sd(income), 
+    standard_deviation = sd(income), 
     max = max(income), 
     min = min(income)
   )
+
 income_summary
 ```
-### Visualising the Customer Income ($) Data 
+
+> To provide a summary on the customer income ($) data, the summarise function is utilised to extract the descriptive statistics which provides a general overview on the central tendency and dispersion of customer income. 
+
+### **Visualising the Customer Income ($) Data**
 
 ```{r Visualising Data}
 dataplot(bank$income) + 
@@ -62,8 +63,9 @@ dataplot(bank$income) +
   theme(plot.title = element_text(hjust = 0.5))
 ```
 
+> The Dataplot function (creates a smoothed historgram given a vector of values) was then used on the customer income data to visualise the distribution of income across the sample more clearly. Within the histogram vertical lines representing the mean ($89,225 represented as 89.225) and median ($58,700 represented as 58.7) were included to improve the understanding of the income distribution and recognise how a sample of customers with very high income levels has influenced the mean to be greater than the median (positive skewness).
 
-### Fitting Customer Income to Various Models
+### **Fitting Customer Income to Various Models**
 
 ```{r Fitting Customer Income to Varuous Models}
 normal_fit <- fitdistr(bank$income, "normal")
@@ -76,9 +78,11 @@ gamma_fit <- fitdistr(bank$income, "gamma")
 gamma_fit %>% tidy()
 ```
 
-### Normal Distribution QQ Plot Customer Income ($) 
+> To accommodate the requirement for fitted models, customer income was fitted into three different distributions (Normal, Exponential, Gamma) and was achieved through the use of the fitdistr() function which fits customer income data into the specified respective distribution.
 
-```{r}
+### **Normal Distribution QQ Plot Customer Income ($)**
+
+```{r QQ-Plot Normal Distribution}
 qq_norm <- 
   bank %>% 
   ggplot() +
@@ -87,15 +91,14 @@ qq_norm <-
     stat_qq_line(distribution = qnorm, dparams = normal_fit$estimate, color = "red") +
     theme(aspect.ratio = 1) +    
     theme_bw() +
-    xlab("Theoretical quantiles (normal distribution)") +
+    xlab("Theoretical quantiles (Normal distribution)") +
     ylab("Sample (income)")
 qq_norm
 ```
 
-### Exponential Distribution QQ Plot Customer Income ($) 
+### **Exponential Distribution QQ Plot Customer Income ($)** 
 
-
-```{r}
+```{r QQ-Plot Exponential Distribution}
 qq_exp <- 
   bank %>% 
   ggplot() +
@@ -104,17 +107,14 @@ qq_exp <-
     stat_qq_line(distribution = qexp, dparams = exponential_fit$estimate, color = "red") +
     theme(aspect.ratio = 1) +    
     theme_bw() +
-    xlab("Theoretical quantiles (exponential distribution)") +
+    xlab("Theoretical quantiles (Exponential distribution)") +
     ylab("Sample (income)")
 qq_exp
 ```
 
+### **Gamma Distribution QQ Plot Customer Income ($)**
 
-
-### Gamma Distribution QQ Plot Customer Income ($) 
-
-
-```{r}
+```{r QQ-Plot Gamma Distribution}
 qq_gamma <- 
   bank %>% 
   ggplot() +
@@ -123,16 +123,23 @@ qq_gamma <-
     stat_qq_line(distribution = qgamma, dparams = gamma_fit$estimate, color = "red") +
     theme(aspect.ratio = 1) +    
     theme_bw() +
-    xlab("Theoretical quantiles (gamma distribution)") +
-    ylab("Sample (income)")
+    xlab("Theoretical quantiles (Gamma distribution)") +
+    ylab("Sample (Income)")
 qq_gamma
 ```
+
+> Following the construction of fitted models, QQ plots were used to determine which fitted model is most representative of the actual distribution of customer income data. This was achieved through stat_qq() and stat_qq_line() functions which compares the fitted distribution of customer income data to the respective theoretical distribution through a linear line. Significant deviations from the theoretical distribution line indicate that the fitted model may not follow the respecitve distribution and based on the three QQ plot graphs, the normal fitted model deviates significantly from the theoretical distribution line at tails of customer income levels. This indiciates the the customer income data is unlikely to follow a normal distribution due to the aforementioned deviations from the tails of the income data. However the exponential and gamma fitted models seem to closely follow the respective theoretical distribution line cross all income levels suggesting that the customer income closely follows an exponential or gamma distribution.
+
+
+> Through the use of descriptive statistics and visualising customer data via a histogram, it is clear that the a high proportion of customers in the sample data earn between $0-$100,000 with a mean income = $89,225 and median income = $58,700. Furthermore a standard deviation (amount of variation in a set of data) of roughly $87,571 indicates that data is quite spread apart as data points are around $87,571 away from the mean. Through fitting the customer income data into various distribution models (Normal, Expoenential, Gamma) and comparing it with respective theoretical distributions (via QQ plot method), the most appropriate fitted model for customer income data would be Exponential or Gamma which suggests that a high proportion of customers have income levels clustered towards the lower end whereas a few customers have income levels that are towards the higher end of income levels. This could be useful for product design and marketing strategies as it could be beneficial to gear marketing towards affordability for price sensitive customers and product design to be value for money.  
 
 
 
 ## **Task 2**
 
-### Estimating 80th Percentile of Customer Income ($) using quantile() R function 
+> Here we estimate the 80th percentile of customer incomes using different approaches. The three models used to fit the income data are the normal, exponential and gamma distributions with the sample quantile included. Afterwards, bootstraping methods of resampling are utilised in order to compute a 95% confidence interval for each estimate to assess the realibility of the estimates.
+
+### **Estimating 80th Percentile of Customer Income ($) using quantile() R function**
 
 ```{r}
 normal_80th_percentile <- qnorm(0.8, mean = normal_fit$estimate[1], sd =normal_fit$estimate[2])
@@ -143,8 +150,12 @@ sample_80th_percentile <- quantile(bank$income, probs = 0.8, type = 7)
 tibble(normal_80th_percentile, exponential_80th_percentile, gamma_80th_percentile, sample_80th_percentile)
 ```
 
+> In this, we compute the 80th percentile for each normal(qnorm), exponential(qexp), gamma distributions(qgamma) and the sample quantile. Each of these give different 80 percentile incomes. In the case for the quantile function it gives the most accurate percentile and is the most useful reference point which does not rely on distribution assumptions.
 
 
+> To implement bootstrap resampling to generate 5000 samples of income data to fit each distribution to each sample and calculate the 80th percentile. Then the quantile() function is used to compute the 95% confidence intervals (from the 2.5th and 97.5th percentiles) of the already boostrapped estimates. A similar boostrap method is used for the without fitting a distribution and only resample and using quantile() to get the 95% confidence interval.
+
+>In simple words, imagine taking numbers from a pack of 200 numbers, then putting the into the desired distributions
 
 ```{r}
 B <- 5000
@@ -162,6 +173,7 @@ normal_80th_percentiles <- quantile(norm_quant, c(0.025, 0.975))
 normal_80th_percentiles
 ```
 
+> As seen above the normal distribution bootstrap gives a 2.5% quantile of approximately 140.5938 and the 97.5% quantile is approximately 184.8836. In this process, the middle 95% of the 5000 80th percentiles is those values given. In this we are assuming that the data points of each normal distribution of symmetrically distributed.
 
 ```{r}
 B <- 5000
@@ -175,8 +187,10 @@ for (b in 1:B) {
 }
 
 exponential_80th_percentiles <- quantile(exp_quant, c(0.025, 0.975))
-exponential_80th_percentiles 
+exponential_80th_percentiles
 ```
+
+> As seen above the exponential distribution bootstrap gives a 2.5% quantile of approximately 124.7504 and the 97.5% quantile is approximately 163.7284. In this process, the middle 95% of the 5000 80th percentiles is those values given. In this the assumption we are making is that the data is skewed on either side.
 
 ```{r}
 B <- 5000
@@ -193,6 +207,8 @@ gamma_80th_percentiles <- quantile(gamma_quant, c(0.025, 0.975))
 gamma_80th_percentiles
 ```
 
+> As seen above the gamma distribution bootstrap gives a 2.5% quantile of approximately 123.0027 and the 97.5% quantile is approximately 162.8095. In this process, the middle 95% of the 5000 80th percentiles is those values given. In this distribution we assume that the data is right-skewed with a long tail of higher incomes and no upper limit.
+
 ```{r}
 B <- 5000
 quant <- matrix(nrow = B, ncol = 1)
@@ -203,7 +219,10 @@ for (b in 1:B) {
 }
 
 sample_80th_percentiles <- quantile(quant, c(0.025, 0.975))
+sample_80th_percentiles
 ```
+
+> As seen above the resampled quantiles without a distribution gives a 2.5% quantile of approximately 116.38 and the 97.5% quantile is approximately 172.70. In this process, the middle 95% of the 5000 80th percentiles is those values given. In this no assumptions are made about the underlying distributions of the data since no distributions are utilised.
 
 ```{r}
 data.frame(Normal_80th_percentiles = normal_80th_percentiles,
@@ -215,9 +234,11 @@ data.frame(Normal_80th_percentiles = normal_80th_percentiles,
            )
 ```
 
+>This summarise all the above data into one tibble. The exponential distribution would be the most approaxte model here for estimating the 80th percentile of cusomer income given its ability to capture the right-skewness nature of the data. The exponential model is simple and the best fit to the data making it the most reliable choice. Therefore, the confidence interval of (124.7504 163.7284) is the most gives the most robus range in which the 80th percentile is likley to fall. While the sample quantile without any distribution offers no assumptions to be taken, the exponential models offers interpretability, better understanding and strong performance for analysis into the future.
+
 ## **Task 3**
 
-```{r}
+```{r Simulating sample distributions}
 n <- 200
 B <- 5000
 
@@ -239,7 +260,9 @@ true_80th_percentile <- qexp(0.8, 1/100)
 all_80th_percentile_estimates <- tibble(normal_estimates, exp_estimates, gamma_estimates) 
 ```
 
-```{r}
+> The data under “all_80th_percentile_estimates” represents the 80th percentile of the best normal, exponential and gamma distributions fits for randomly generated samples given that the population sample followed an exponential distribution with the mean of $100,000. This is done by taking 5000 separate samples of 200 (the size of the given bank data) from an exponential distribution with a mean income of $100,000 (we have represented it as 100). We then got the 80th percentile of each sample when fitting it into a normal, exponential and gamma distribution. Without looking at the data, it would be expected that the exponential and gamma 80th percentile estimators would be more accurate than the normal 80th percentile estimator, as the samples are being generated from an exponential distribution which is very similar to a gamma distribution. 
+
+```{r Visualising the estimators}
 all_80th_percentile_estimates %>%
   gather(key = "Estimator", value = "Estimate") %>%
   ggplot(aes(x = Estimate, fill = Estimator)) +
@@ -249,7 +272,10 @@ all_80th_percentile_estimates %>%
        x = "Estimated 80th Percentile", y = "Density") +
   theme_minimal()
 ```
-```{r}
+
+> When comparing the three sampling distribution types to each other and the true 80th percentile income ($160,943.8) of the population distribution, the normal 80th percentile estimate is off by around 20 whereas the gamma 80th percentile estimates, and the exponential 80th percentile estimates are almost equal to the true 80th percentile.  
+
+```{r Biases and standard deviations}
 bias_normal <- mean(normal_estimates) - true_80th_percentile
 bias_exp <- mean(exp_estimates) - true_80th_percentile
 bias_gamma <- mean(gamma_estimates) - true_80th_percentile
@@ -269,36 +295,52 @@ data.frame(Bias = bias,
                          "Gamma"))
 ```
 
+> This can also be seen when looking at the bias estimates for each of the distributions. The normal 80th percentile estimator has a bias of 22.900 whereas the exponential and gamma 80th percentile estimators have a very small bias of -0.058 and -0.211 respectively. This means that the exponential and gamma estimators are closer to the actual 80th percentile than the normal estimator. A similar idea can be seen when looking at the standard deviations of each estimator. The normal estimator has a larger standard deviation (meaning that it is more variable) at 14.38 whereas the exponential and gamma estimators have a standard deviation of 11.52 and 11.57 respectively. Looking at both bias and standard deviation, it is apparent that the exponential 80th percentile is the most appropriate estimator of these three to use as it has the smallest standard deviation and a bias closest to 0.
+
+> If we simulated from a gamma distribution instead of an exponential distribution (using a shape parameter not equal to 1), we would expect similar results, but the gamma estimator would most likely be the most accurate estimator. Again, the exponential estimator would be very similar to the gamma estimator, however it would be more likely to be more inaccurate than the gamma estimator was when simulating from an exponential distribution. This is because an exponential estimator would not account for the shape of a gamma distribution, thus being more inaccurate.
+
+> A benefit of using a normal 80th percentile estimator is that a normal distribution is very intuitive to understand. The bank manager may not have a thorough understanding of statistics, but a normal distribution is one that most people can very easily understand. One downside of using a normal 80th percentile estimator is that it is very unrepresentative of the dataset. Exponential and Gamma distributions aren’t very intuitive to people without statistics backgrounds; however, they are more accurate in relation to the data. 
+
+> Overall, when the income data is assumed to be an exponential distribution with an assumed mean of $100,000, the 80th percentile estimator of the exponential fit is the most accurate estimator of the 80th percentile out of the three estimators (normal 80th percentile, exponential 80th percentile and gamma 80th percentile)
 
 ## **Task 4**
 
-```{r}
-unique(bank$education) 
+> To understand the relationship between customer income and their level of education and to observe the differences between each level, it is particularly useful to observe the distribution of income within each level. This provides additional perspective and information for us to make comparisons between the income of different education levels.
 
+```{r divide data into masters, bachelors, high school, and dotorates}
+# Separate data based on education level
 master <- bank %>% filter(education == "Master") 
 bachelor <- bank %>% filter(education == "Bachelor") 
 highschool <- bank %>% filter(education == "High school") 
 doctorate <- bank %>% filter(education == "Doctorate") 
 
-master_plot <- dataplot(master$income, bins = 30) + ggtitle("Masters")  + xlab("Income ($)")
-bachelor_plot <- dataplot(bachelor$income, bins = 30) + ggtitle("Bachelor") + xlab("Income ($)")
-highschool_plot <- dataplot(highschool$income, bins = 30) + ggtitle("High School") + xlab("Income ($)")
-doctorate_plot <- dataplot(doctorate$income, bins = 30) + ggtitle("Doctorate") + xlab("Income ($)")
+# Create histograms representing the distribution of income within each education level
+master_plot <- dataplot(master$income, bins = 30) + ggtitle("Income Distribution of Masters")  + xlab("Income ($)")
+bachelor_plot <- dataplot(bachelor$income, bins = 30) + ggtitle("Income Distribution of Bachelors") + xlab("Income ($)")
+highschool_plot <- dataplot(highschool$income, bins = 30) + ggtitle("Income Distribution of High school") + xlab("Income ($)")
+doctorate_plot <- dataplot(doctorate$income, bins = 30) + ggtitle("Income Distribution of Doctorate") + xlab("Income ($)")
 
 grid.arrange(master_plot, bachelor_plot, highschool_plot, doctorate_plot)
 ```
 
-```{r}
-n_completed_uni <- bank %>% filter(education == "High school")
-mean(n_completed_uni$income)
+> After separating the data based on education, we then plot the distribution of income within each level using histograms, thus giving us graphs that inform us about where the income of customers lie. An observation that cna be made is that the distributions for customers who have completed at most a masters, bachelors, or at most high school, are similar in shape, each with a positive skew. It can be seen that regardless of the level of these three, most customers are earning at most 100k a year, with some individuals earning much more than that, producing a positive skew. Then there is the income distribution for customers who have completed a doctorate, which has a very different shaped distribution and is very sparse. This is because there are very few customers in the data set who have completed a doctorate, in fact, there are only 4. This is very little data to produce a histogram that tells us anything significant about the income distribution of doctorates.
 
+> However, to answer the question of whether there is a large difference in average income between those who have completed a university degree and those who have not, a 95% confidence interval can be used to represent this. This was done by filtering data by whether a customer completed at most high school or not, then calculating the confidence interval using a t-distribution. The data was treated as independent groups rather than paired groups as the income of one customer does not affect and is independent of the income of another.
+
+```{r caculate confidence interval for difference of mean incomes between education levels}
+# Filter data based on whether the customer has a university degree or not
 completed_uni <- bank %>% filter(education != "High school")
-mean(completed_uni$income) 
+n_completed_uni <- bank %>% filter(education == "High school")
 
+# Take CLT-based confidence using the t-distribution
 t_test_result <- t.test(completed_uni$income, n_completed_uni$income, conf.level = 0.95)
-
 t_test_result$conf.int
 ```
+
+> As shown above, the 95% confidence interval is (-1.669, 58.528). A CLT-based confidence interval was used as the number of samples for those with university degrees and those who do not is at least 30, which are sufficient amounts for CLT to hold. As shown above, this calculation yielded a 95% confidence interval of (-1.669, 58.528). This provides a range within which the true difference in average income can lie, however this CI is quite wide. This may suggest that there may be a small sample size or lots of variation in the data. Most interestingly, this CI includes 0, which would suggest that there is no difference between the average income of the two groups. Due to this result, it cannot be concluded with high confidence that those with university degrees earn more than those who do not, regardless of how "postively skewed" the interval may appear. However, if this range did not contain 0 and instead only contained positive values, it would then imply that greater education would lead to higher incomes.
+
+> In conclusion, we have observed that the income of customers regardless of education level are spread out relatively similarly (with the exception of doctorates). When we calculated a 95% confidence interval to determine the difference between the average income of those with a university degree and those without it, we obtained the interval (-1.669, 58.528). This gives us a range of values that the difference could be, such that it is consistent with the data we observed, or in other words, if we collected this data again and calculated another confidence interval, 95% this interval will contain the true value.
+
 
 ## **Task 5**
 ```{r}
@@ -321,14 +363,15 @@ gamma_meanvar <- function(alpha, beta) {
 
 n_completed_uni_posterior <- gamma_exponential(30, 65.06)
 completed_uni_posterior <- gamma_exponential(170, 93.48941)
-n_completed_uni_posterior #distribution of λ_0
-completed_uni_posterior #distribution of λ_1
+n_completed_uni_posterior #distribution of L_0
+completed_uni_posterior #distribution of L_1
 
-qgamma(c(0.025, 0.975), n_completed_uni_posterior$alpha_tilde, n_completed_uni_posterior$beta_tilde) #95% chance of λ_0 being within this interval
-qgamma(c(0.025, 0.975), completed_uni_posterior$alpha_tilde, completed_uni_posterior$beta_tilde) #95% chance of λ_1 being within this interval
+qgamma(c(0.025, 0.975), n_completed_uni_posterior$alpha_tilde, n_completed_uni_posterior$beta_tilde) #95% chance of L_0 being within this interval
+qgamma(c(0.025, 0.975), completed_uni_posterior$alpha_tilde, completed_uni_posterior$beta_tilde) #95% chance of L_1 being within this interval
 ```
 
 ```{r}
+set.seed(24205242)
 R <- 10000
 
 sampleCompleted <- rgamma(R, completed_uni_posterior$alpha_tilde, completed_uni_posterior$beta_tilde)
@@ -339,4 +382,18 @@ blob <- qexp(0.8, sampleCompleted) - qexp(0.8, sampleHighschool)
 
 quantile(blob, probs = c(0.025,0.975), type = 7)
 ```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
